@@ -61,18 +61,36 @@ local waypoints = {
     Vector3.new(-217.459228515625, 385.5, 774.0623779296875)
 }
 
-local function tweenToPosition(part, position)
-    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(part, tweenInfo, {Position = position})
-    tween:Play()
-    tween.Completed:Wait()
+local tweens = {}
+for i = 1, #waypoints - 1 do
+    local tweenInfo = TweenInfo.new((waypoints[i] - waypoints[i + 1]).Magnitude / 10, Enum.EasingStyle.Linear)
+    table.insert(tweens, TweenService:Create(part, tweenInfo, {Position = waypoints[i + 1]}))
 end
 
-spawn(function()
-    for _, waypoint in ipairs(waypoints) do
-        tweenToPosition(part, waypoint)
+local function playTweens()
+    for _, tween in ipairs(tweens) do
+        tween:Play()
+        tween.Completed:Wait()
     end
-end)
+end
+
+local function stopTweens()
+    for _, tween in ipairs(tweens) do
+        tween:Cancel()
+    end
+end
+
+Tabs.main:Toggle({
+    Title = "Activate Mode",
+    Default = false,
+    Callback = function(state)
+        if state then
+            playTweens()
+        else
+            stopTweens()
+        end
+    end
+})
 
 -- Configuration
 
